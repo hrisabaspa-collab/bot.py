@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📤 رفع المتطلبات</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Cairo', 'Tahoma', Arial, sans-serif; background: linear-gradient(135deg, #1a0533 0%, #2d1b69 50%, #4a2c8a 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .container { max-width: 500px; width: 100%; background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); border-radius: 24px; padding: 40px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 30px 80px rgba(0,0,0,0.5); }
+        h2 { color: white; text-align: center; margin-bottom: 8px; }
+        .subtitle { text-align: center; color: #c4b5d4; font-size: 14px; margin-bottom: 25px; }
+        .info-box { background: rgba(139,92,246,0.1); border-radius: 12px; padding: 16px; text-align: center; margin-bottom: 20px; border: 1px solid rgba(139,92,246,0.2); }
+        .info-box .label { color: #7c6a9e; font-size: 13px; }
+        .info-box .value { color: #a78bfa; font-size: 18px; font-weight: 600; }
+        .upload-area { border: 2px dashed rgba(139,92,246,0.3); border-radius: 16px; padding: 35px 20px; text-align: center; transition: all 0.3s; }
+        .upload-area:hover { border-color: rgba(139,92,246,0.6); background: rgba(139,92,246,0.05); }
+        .upload-area .icon { font-size: 48px; display: block; margin-bottom: 10px; }
+        .upload-area label { cursor: pointer; color: #a78bfa; font-size: 18px; font-weight: 600; }
+        .upload-area label:hover { color: #8b5cf6; }
+        .upload-area input[type="file"] { display: none; }
+        .upload-area .hint { color: #6a5a8a; font-size: 13px; margin-top: 8px; }
+        .upload-area .example { color: #4a3a6a; font-size: 12px; margin-top: 4px; font-family: monospace; }
+        .btn { width: 100%; padding: 14px; background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: 600; cursor: pointer; transition: all 0.3s; margin-top: 20px; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(139,92,246,0.4); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .back-link { text-align: center; margin-top: 16px; color: #6a5a8a; font-size: 13px; }
+        .back-link a { color: #a78bfa; text-decoration: none; }
+        .back-link a:hover { text-decoration: underline; }
+        .alert { padding: 12px 16px; border-radius: 12px; margin-bottom: 16px; font-size: 14px; }
+        .alert-success { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #6ee7b7; }
+        .alert-danger { background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; }
+        .alert-warning { background: rgba(251, 191, 36, 0.15); border: 1px solid rgba(251, 191, 36, 0.3); color: #fcd34d; }
+        .file-selected { display: none; color: #6ee7b7; margin-top: 8px; font-size: 14px; }
+        .file-selected.show { display: block; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>📤 رفع المتطلبات</h2>
+        <p class="subtitle">أرسل ملف المكتبات المطلوبة لتشغيل البوت</p>
+        
+        <div class="info-box">
+            <div class="label">✅ تم استلام ملف البوت</div>
+            <div class="value">{{ bot_name }}</div>
+            <div style="color:#6a5a8a;font-size:13px;margin-top:4px;">🆔 المعرف: {{ bot_id }}</div>
+        </div>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endwith %}
+        
+        <form method="POST" action="/upload_requirements/{{ bot_id }}" enctype="multipart/form-data" id="uploadForm">
+            <div class="upload-area" id="dropZone">
+                <span class="icon">📄</span>
+                <label for="req_file">📤 اضغط لرفع ملف requirements.txt</label>
+                <input type="file" name="req_file" id="req_file" accept=".txt" required>
+                <div class="hint">📌 ملف نصي يحتوي على المكتبات المطلوبة</div>
+                <div class="example">📌 مثال: pyTelegramBotAPI, requests, Flask</div>
+                <div class="file-selected" id="fileSelected">✅ تم اختيار الملف: <span id="fileName"></span></div>
+            </div>
+            <button type="submit" class="btn" id="submitBtn">🚀 رفع وتشغيل البوت</button>
+        </form>
+        
+        <div class="back-link">
+            <a href="/dashboard">🔙 العودة للوحة التحكم</a>
+        </div>
+    </div>
+    
+    <script>
+        const fileInput = document.getElementById('req_file');
+        const fileSelected = document.getElementById('fileSelected');
+        const fileName = document.getElementById('fileName');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        fileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                fileName.textContent = this.files[0].name;
+                fileSelected.classList.add('show');
+                submitBtn.disabled = false;
+            } else {
+                fileSelected.classList.remove('show');
+                submitBtn.disabled = true;
+            }
+        });
+        
+        // Drag and Drop
+        const dropZone = document.getElementById('dropZone');
+        dropZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.style.borderColor = '#8b5cf6';
+            this.style.background = 'rgba(139,92,246,0.1)';
+        });
+        dropZone.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.style.borderColor = 'rgba(139,92,246,0.3)';
+            this.style.background = 'transparent';
+        });
+        dropZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.style.borderColor = 'rgba(139,92,246,0.3)';
+            this.style.background = 'transparent';
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                fileName.textContent = files[0].name;
+                fileSelected.classList.add('show');
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

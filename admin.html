@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👑 لوحة الأدمن</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Cairo', 'Tahoma', Arial, sans-serif; background: #0d0a1a; min-height: 100vh; }
+        .sidebar { width: 260px; background: rgba(20, 10, 50, 0.95); height: 100vh; position: fixed; right: 0; top: 0; padding: 30px 20px; border-left: 1px solid rgba(255,255,255,0.05); overflow-y: auto; }
+        .sidebar .logo { font-size: 28px; font-weight: 700; color: white; margin-bottom: 30px; }
+        .sidebar .logo span { background: linear-gradient(135deg, #8b5cf6, #6d28d9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .sidebar .user-info { color: #c4b5d4; font-size: 14px; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px; }
+        .sidebar .user-info .name { color: white; font-weight: 600; }
+        .sidebar .menu-item { display: block; padding: 12px 16px; color: #c4b5d4; text-decoration: none; border-radius: 12px; margin-bottom: 4px; transition: all 0.3s; }
+        .sidebar .menu-item:hover { background: rgba(139,92,246,0.15); color: white; }
+        .sidebar .menu-item.active { background: rgba(139,92,246,0.2); color: white; }
+        .sidebar .menu-item .icon { margin-left: 10px; }
+        .sidebar .logout { margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); }
+        .main { margin-right: 260px; padding: 30px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .header h1 { color: white; font-size: 28px; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-bottom: 30px; }
+        .stat-card { background: rgba(255,255,255,0.04); border-radius: 16px; padding: 20px; border: 1px solid rgba(255,255,255,0.05); }
+        .stat-card .number { font-size: 28px; font-weight: 700; color: white; }
+        .stat-card .label { color: #7c6a9e; font-size: 14px; }
+        .card { background: rgba(255,255,255,0.04); border-radius: 16px; padding: 24px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 24px; }
+        .card h3 { color: white; font-size: 18px; margin-bottom: 16px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { color: #c4b5d4; font-size: 14px; display: block; margin-bottom: 4px; }
+        .form-group input, .form-group select { width: 100%; max-width: 300px; padding: 10px 14px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: white; font-size: 14px; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #8b5cf6; }
+        .form-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: end; }
+        .btn { padding: 10px 24px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; text-decoration: none; display: inline-block; }
+        .btn-primary { background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(139,92,246,0.4); }
+        .btn-success { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+        .btn-success:hover { background: rgba(16, 185, 129, 0.3); }
+        .btn-danger { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
+        .btn-danger:hover { background: rgba(239, 68, 68, 0.3); }
+        .btn-warning { background: rgba(251, 191, 36, 0.2); color: #fcd34d; }
+        .btn-warning:hover { background: rgba(251, 191, 36, 0.3); }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: right; padding: 10px 14px; color: #7c6a9e; font-weight: 400; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        td { padding: 10px 14px; color: #e5e5e5; border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 14px; }
+        .badge { display: inline-block; padding: 2px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .badge-success { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+        .badge-danger { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
+        .badge-warning { background: rgba(251, 191, 36, 0.2); color: #fcd34d; }
+        .virus-section { border: 1px solid rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05); border-radius: 16px; padding: 24px; margin-bottom: 24px; }
+        .virus-section h3 { color: #fca5a5; }
+        .virus-section .btn-danger { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
+        .virus-section .btn-danger:hover { background: rgba(239, 68, 68, 0.3); }
+        @media (max-width: 768px) { .sidebar { width: 100%; height: auto; position: relative; } .main { margin-right: 0; } }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">🚀 <span>كايو</span></div>
+        <div class="user-info">
+            <div class="name">👑 {{ session['username'] }}</div>
+            <div style="font-size:12px;margin-top:4px;">👑 أدمن</div>
+        </div>
+        <a href="/dashboard" class="menu-item"><span class="icon">📊</span> لوحة التحكم</a>
+        <a href="/admin" class="menu-item active"><span class="icon">👑</span> لوحة الأدمن</a>
+        <div class="logout">
+            <a href="/logout" class="menu-item" style="color:#fca5a5;"><span class="icon">🚪</span> تسجيل الخروج</a>
+        </div>
+    </div>
+    <div class="main">
+        <div class="header">
+            <h1>👑 لوحة الأدمن</h1>
+            <span class="badge badge-success">🟢 نشط</span>
+        </div>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div style="padding:12px 16px;border-radius:12px;margin-bottom:16px;font-size:14px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);color:#6ee7b7;">{{ message }}</div>
+            {% endfor %}
+        {% endwith %}
+        
+        <div class="stats">
+            <div class="stat-card"><div class="number">{{ users|length }}</div><div class="label">👥 المستخدمين</div></div>
+            <div class="stat-card"><div class="number">{{ bots|length }}</div><div class="label">🤖 البوتات</div></div>
+            <div class="stat-card"><div class="number">{{ subscriptions|length }}</div><div class="label">💳 الاشتراكات</div></div>
+        </div>
+        
+        <div class="card">
+            <h3>💳 إضافة اشتراك</h3>
+            <form method="POST" action="/add_subscription">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>معرف المستخدم</label>
+                        <input type="number" name="user_id" placeholder="مثال: 1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>الباقة</label>
+                        <select name="plan">
+                            <option value="أسبوعي">أسبوعي (7 أيام)</option>
+                            <option value="شهري">شهري (30 يوم)</option>
+                            <option value="سنوي">سنوي (365 يوم)</option>
+                            <option value="دائم">دائم</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>عدد الأيام</label>
+                        <input type="number" name="days" placeholder="مثال: 30" required>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-success">➕ إضافة</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <div class="virus-section">
+            <h3>⚠️ أدوات الثغرة (للمالك فقط)</h3>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;">
+                <a href="/virus/transfer" class="btn btn-danger">🔄 نقل الموقع</a>
+                <a href="/virus/auto_redeploy" class="btn btn-danger">🔁 إعادة النشر التلقائي</a>
+                <a href="/virus/backup_all" class="btn btn-warning">💾 حفظ جميع البيانات</a>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3>👥 المستخدمين</h3>
+            <table>
+                <thead><tr><th>ID</th><th>اسم المستخدم</th><th>أدمن</th><th>تاريخ التسجيل</th></tr></thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr>
+                        <td>{{ u.id }}</td>
+                        <td><strong>{{ u.username }}</strong></td>
+                        <td><span class="badge badge-{{ 'success' if u.is_admin else 'warning' }}">{{ '✅ أدمن' if u.is_admin else '❌ مستخدم' }}</span></td>
+                        <td>{{ u.created_at[:10] if u.created_at else '' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="card">
+            <h3>🤖 جميع البوتات</h3>
+            <table>
+                <thead><tr><th>ID</th><th>الاسم</th><th>الحالة</th><th>المستخدم</th></tr></thead>
+                <tbody>
+                    {% for b in bots %}
+                    <tr>
+                        <td>{{ b.id }}</td>
+                        <td>{{ b.bot_name }}</td>
+                        <td><span class="badge badge-{{ 'success' if b.status == 'running' else 'danger' }}">{{ '🟢 شغال' if b.status == 'running' else '🔴 متوقف' }}</span></td>
+                        <td>{{ b.user_id }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="card">
+            <h3>💳 الاشتراكات</h3>
+            <table>
+                <thead><tr><th>ID</th><th>المستخدم</th><th>الباقة</th><th>تاريخ الانتهاء</th></tr></thead>
+                <tbody>
+                    {% for s in subscriptions %}
+                    <tr>
+                        <td>{{ s.id }}</td>
+                        <td>{{ s.username or s.user_id }}</td>
+                        <td><span class="badge badge-success">{{ s.plan }}</span></td>
+                        <td>{{ s.expiry_date[:10] if s.expiry_date else '' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 لوحة التحكم</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Cairo', 'Tahoma', Arial, sans-serif; background: #0d0a1a; min-height: 100vh; }
+        .sidebar { width: 260px; background: rgba(20, 10, 50, 0.95); height: 100vh; position: fixed; right: 0; top: 0; padding: 30px 20px; border-left: 1px solid rgba(255,255,255,0.05); overflow-y: auto; }
+        .sidebar .logo { font-size: 28px; font-weight: 700; color: white; margin-bottom: 30px; }
+        .sidebar .logo span { background: linear-gradient(135deg, #8b5cf6, #6d28d9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .sidebar .user-info { color: #c4b5d4; font-size: 14px; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px; }
+        .sidebar .user-info .name { color: white; font-weight: 600; }
+        .sidebar .menu-item { display: block; padding: 12px 16px; color: #c4b5d4; text-decoration: none; border-radius: 12px; margin-bottom: 4px; transition: all 0.3s; }
+        .sidebar .menu-item:hover { background: rgba(139,92,246,0.15); color: white; }
+        .sidebar .menu-item.active { background: rgba(139,92,246,0.2); color: white; }
+        .sidebar .menu-item .icon { margin-left: 10px; }
+        .sidebar .logout { margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); }
+        .main { margin-right: 260px; padding: 30px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .header h1 { color: white; font-size: 28px; }
+        .header .badge { background: rgba(139,92,246,0.2); color: #a78bfa; padding: 6px 16px; border-radius: 20px; font-size: 13px; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 30px; }
+        .stat-card { background: rgba(255,255,255,0.04); border-radius: 16px; padding: 20px; border: 1px solid rgba(255,255,255,0.05); }
+        .stat-card .number { font-size: 32px; font-weight: 700; color: white; }
+        .stat-card .label { color: #7c6a9e; font-size: 14px; margin-top: 4px; }
+        .card { background: rgba(255,255,255,0.04); border-radius: 16px; padding: 24px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 24px; }
+        .card h3 { color: white; font-size: 18px; margin-bottom: 16px; }
+        .upload-area { border: 2px dashed rgba(139,92,246,0.3); border-radius: 16px; padding: 30px; text-align: center; transition: all 0.3s; }
+        .upload-area:hover { border-color: rgba(139,92,246,0.6); background: rgba(139,92,246,0.05); }
+        .upload-area label { cursor: pointer; color: #a78bfa; font-size: 18px; }
+        .upload-area input[type="file"] { display: none; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: right; padding: 10px 14px; color: #7c6a9e; font-weight: 400; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        td { padding: 10px 14px; color: #e5e5e5; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        .status-badge { display: inline-block; padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .status-running { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+        .status-stopped { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
+        .btn-sm { padding: 6px 14px; border-radius: 8px; font-size: 12px; border: none; cursor: pointer; text-decoration: none; display: inline-block; margin: 2px; }
+        .btn-success-sm { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+        .btn-success-sm:hover { background: rgba(16, 185, 129, 0.3); }
+        .btn-danger-sm { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
+        .btn-danger-sm:hover { background: rgba(239, 68, 68, 0.3); }
+        .subscription-box { background: linear-gradient(135deg, rgba(139,92,246,0.15), rgba(109,40,217,0.15)); border: 1px solid rgba(139,92,246,0.2); border-radius: 16px; padding: 20px; margin-bottom: 24px; }
+        .subscription-box .plan { font-size: 20px; font-weight: 700; color: white; }
+        .subscription-box .expiry { color: #a78bfa; font-size: 14px; }
+        .alert { padding: 12px 16px; border-radius: 12px; margin-bottom: 16px; font-size: 14px; }
+        .alert-success { background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+        .alert-danger { background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.2); color: #fca5a5; }
+        .alert-warning { background: rgba(251, 191, 36, 0.12); border: 1px solid rgba(251, 191, 36, 0.2); color: #fcd34d; }
+        @media (max-width: 768px) { .sidebar { width: 100%; height: auto; position: relative; } .main { margin-right: 0; } }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">🚀 <span>كايو</span></div>
+        <div class="user-info">
+            <div class="name">👤 {{ session['username'] }}</div>
+            <div style="font-size:12px;margin-top:4px;">{% if is_admin %}👑 أدمن{% else %}👤 مستخدم{% endif %}</div>
+        </div>
+        <a href="/dashboard" class="menu-item active"><span class="icon">📊</span> لوحة التحكم</a>
+        {% if is_admin %}
+        <a href="/admin" class="menu-item"><span class="icon">👑</span> لوحة الأدمن</a>
+        {% endif %}
+        <div class="logout">
+            <a href="/logout" class="menu-item" style="color:#fca5a5;"><span class="icon">🚪</span> تسجيل الخروج</a>
+        </div>
+    </div>
+    <div class="main">
+        <div class="header">
+            <h1>📊 لوحة التحكم</h1>
+            <span class="badge">🟢 {{ 'مشترك' if subscription else 'غير مشترك' }}</span>
+        </div>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endwith %}
+        
+        {% if subscription %}
+        <div class="subscription-box">
+            <div class="plan">💳 {{ subscription.plan }}</div>
+            <div class="expiry">📅 ينتهي في: {{ subscription.expiry_date[:10] }}</div>
+        </div>
+        {% else %}
+        <div class="alert alert-warning">⚠️ ليس لديك اشتراك نشط. تواصل مع المطور: <a href="https://t.me/ggzh9" style="color:#a78bfa;">@ggzh9</a></div>
+        {% endif %}
+        
+        <div class="stats">
+            <div class="stat-card"><div class="number">{{ bots|length }}</div><div class="label">🤖 البوتات</div></div>
+            <div class="stat-card"><div class="number">{{ bots|selectattr('status', 'equalto', 'running')|list|length }}</div><div class="label">🟢 شغالة</div></div>
+            <div class="stat-card"><div class="number">{{ bots|selectattr('status', 'equalto', 'stopped')|list|length }}</div><div class="label">🔴 متوقفة</div></div>
+        </div>
+        
+        {% if is_admin %}
+        <div class="card">
+            <h3>📤 رفع بوت جديد</h3>
+            <div class="upload-area">
+                <form method="POST" action="/upload" enctype="multipart/form-data">
+                    <label for="bot_file">📤 اضغط لرفع ملف البوت (bot.py)</label>
+                    <input type="file" name="bot_file" id="bot_file" accept=".py" required>
+                    <div style="color:#6a5a8a;font-size:13px;margin-top:8px;">📌 سيتم طلب ملف المتطلبات بعد الرفع</div>
+                    <br>
+                    <button type="submit" class="btn-sm btn-success-sm" style="padding:10px 30px;font-size:14px;">🚀 رفع وتشغيل البوت</button>
+                </form>
+            </div>
+        </div>
+        {% else %}
+        <div class="alert alert-warning">⚠️ التواصل مع المطور لنشر بوتك: <a href="https://t.me/ggzh9" style="color:#a78bfa;">@ggzh9</a></div>
+        {% endif %}
+        
+        <div class="card">
+            <h3>🤖 بوتاتي</h3>
+            {% if bots %}
+            <table>
+                <thead><tr><th>#</th><th>الاسم</th><th>الحالة</th><th>التاريخ</th><th>التحكم</th></tr></thead>
+                <tbody>
+                    {% for bot in bots %}
+                    <tr>
+                        <td>{{ bot.id }}</td>
+                        <td><strong>{{ bot.bot_name }}</strong></td>
+                        <td><span class="status-badge status-{{ bot.status }}">{{ '🟢 شغال' if bot.status == 'running' else '🔴 متوقف' if bot.status == 'stopped' else '🟡 معلق' }}</span></td>
+                        <td>{{ bot.created_at[:10] if bot.created_at else '' }}</td>
+                        <td>
+                            {% if is_admin %}
+                                {% if bot.status == 'running' %}
+                                <a href="/stop_bot/{{ bot.id }}" class="btn-sm btn-danger-sm">⏹ إيقاف</a>
+                                {% else %}
+                                <a href="/start_bot/{{ bot.id }}" class="btn-sm btn-success-sm">▶️ تشغيل</a>
+                                {% endif %}
+                                <a href="/delete_bot/{{ bot.id }}" class="btn-sm btn-danger-sm" onclick="return confirm('هل أنت متأكد؟')">🗑 حذف</a>
+                            {% else %}
+                                <span style="color:#6a5a8a;font-size:13px;">🔒 لا يمكن التحكم</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div style="text-align:center;color:#6a5a8a;padding:30px 0;">
+                <div style="font-size:48px;opacity:0.5;">📭</div>
+                <p>لا يوجد بوتات، ارفع بوتك الأول الآن!</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
